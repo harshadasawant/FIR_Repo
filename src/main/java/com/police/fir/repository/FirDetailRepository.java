@@ -1,6 +1,7 @@
 package com.police.fir.repository;
 
 import com.police.fir.entity.FirDetail;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
