@@ -1,0 +1,262 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+    .pagesubmission {
+    padding: 0px;
+    color: #13376c;
+    font-weight: bold;
+    font-size: 12px;
+    height: 23px;
+}
+.label {
+    font-weight: normal;
+    background-color: #E0E6FF;
+    color: #000000;
+    margin: 0px;
+    padding: 0 20 0 0;
+    font-size: 11px;
+}
+
+.frmtable td {
+    height: 15px;
+    padding: 1px 0px 1px 3px;
+}
+.frmtable td {
+    border-color: #ffffff;
+    border-width: 3px 0px 0 0;
+    border-style: solid;
+    vertical-align: top;
+}
+
+    #header{
+    height:65px;
+    margin:0px
+    }
+
+    #menu {
+    height: 30px;
+    margin: 10px 0 5px 0;
+    background-color: #003399;
+    clear: both;
+    }
+
+    table {
+      width: 100%;
+      margin: 20px
+      border-collapse: collapse;
+    }
+    h1 {
+    border-bottom: 3px solid #35488e;
+    color: #2a5eba;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 0 0 5px 0;
+    margin: 0px 0px 10px 0px;
+}
+body{
+margin: 10px
+}
+.headrow {
+    background-color: #2b6ac1;
+    height: 22px;
+    font-weight: bold;
+    color: #fff;
+}
+.headrow td {
+    padding: 0px 5px 0px 5px;
+    border: 1px solid #a3bfe3;
+}
+.darkrow td {
+    padding: 0px 5px 0px 5px;
+    background-color: #E3E7EA;
+    border: 2px solid #a3bfe3;
+}
+.lightrow td {
+    padding: 0px 5px 0px 5px;
+    background-color: #fff;
+    border: 1px solid #a3bfe3;
+}
+
+
+    </style>
+</head>
+<body>
+
+
+<!-- <div class="d-flex "> -->
+<div id="header">
+    <div class="sublogo">&nbsp;</div>
+</div>
+
+<div id="menu"></div>
+
+<form id="formfirsearch" name="citizenfaqForm"
+      action="https://cctns.delhipolice.gov.in/citizen/regfirsearchpage.htm?stov=2P3A-5PUL-H5CX-V2TG-TCVU-YYFH-CJ4Y-EU8D"
+      method="post">
+    <div id="content">
+        <div class="sectionmand">* Mandatory Field</div>
+        <h1>FIR Search
+            <div align="right">You are Visitor No. 5033 &nbsp;</div>
+        </h1>
+        <div class="row gy-3">
+            <div class="col-12 p-3">
+                <table width="100%" class="frmtable" height="80" border="0" cellpadding="2" id="searchFirId"
+                       cellspacing="0">
+                    <tbody>
+                    <tr>
+                        <td class="label">District<span class="mand">*</span></td>
+                        <td width="30%">
+                            <select id="districtId" name="districtId" tabindex="16" onchange="onDistrictChange()">
+
+                                <option value="0" title="--------------Select-----------------">
+                                    --------------Select-----------------
+                                </option>
+                                <option th:each="district : ${districtList}" th:value="${district.DistrictId}"
+                                        th:text="${district.DistrictName}"></option>
+                            </select>
+                        </td>
+
+                        <td class="label">Police Station<span class="mand">*</span></td>
+                        <td>
+                            <select class="form-select" aria-label="policeStationId" name="policeStationId"
+                                    id="policeStationId">
+                                <option value="0" title="--------------Select-----------------">
+                                    --------------Select-----------------
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">Year<span class="mand">*</span></td>
+                        <td><select id="year" name="year" onfocus="addTitleAttributes(this.id);">
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <option value="2019">2019</option>
+                            <option value="2018">2018</option>
+                            <option value="2017">2017</option>
+                            <option value="2016">2016</option>
+                            <option value="2015">2015</option>
+                        </select>
+                        </td>
+
+                        <td class="label">FIR No<span id="ctrlFirMandLbl" class="mand">*</span></td>
+                        <td width="30%">
+                            <input id="regFirNo" name="regFirNo" type="text" value="" size="20" maxlength="25">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">FIR Date Range (DD/MM/YYYY)</td>
+                        <td>
+                            <input type="date" id="startfrom" name="startfrom">
+                            <input type="date" id="startto" name="startto">
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row gy-2">
+        <div class="col-1 p-3">
+            <div class="pagesubmission">
+                <input id="searchButton " value="Search" type="button" onclick="firDetail();">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row gy-2">
+        <div class="col-12 p-3">
+
+            <div id="results" style="width:1200px;max-height:200px;overflow:auto; display: flex;">
+                <table width="100%" border="0" id="firdetail" cellspacing="0" style="verticalscroll"
+                       cellpadding="0">
+
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    function onDistrictChange(){
+    var select = document.getElementById('districtId');
+    var value = select.options[select.selectedIndex].value;
+    console.log(value);
+    console.log("hi");
+
+    const param =new URLSearchParams( { districtId : value});
+    console.log(param)
+    const url = 'http://localhost:9090/getpolicestationid?' + param.toString();
+    console.log(url);
+    var select1 = document.getElementById('policeStationId');
+    select1.innerHTML="";
+
+    fetch( url).then( response => response.json()).then((data)=>
+    {
+    var len = data.length;
+    for ( var i = 0; i < len; i++) {
+    select1.options.add(new Option(data[i].policestationName, data[i].policestationId));
+    }
+    });
+    }
+
+    function firDetail(){
+    var table = document.getElementById("firdetail");
+<!--    table.style.border-collapse= collapse;-->
+    var varDistrictId = document.getElementById('districtId').value;
+    var varPoliceStationId = document.getElementById('policeStationId').value;
+    var varYear = document.getElementById('year').value;
+<!--    var varFirNo = document.getElementById('regFirNo').value == "" ? 0 : document.getElementById('regFirNo').value;-->
+<!--    console.log("============="+varFirNo);-->
+    const param =new URLSearchParams( { districtId : varDistrictId, policestationId: varPoliceStationId, year: varYear});
+
+    console.log(param.toString())
+    const url = 'http://localhost:9090/fir?' + param.toString();
+    fetch( url).then( response => response.json()).then((data)=>
+    {
+    console.log(data);
+    console.log(data.length);
+        var mainrow="<tr id='headerid' class='headrow'>"+
+                    "<td width='5%'>S.No.</td>"+
+                    "<td width='30%'>FIR No</td>"+
+                    "<td width='29%'>FIR Date(DD/MM/YYYY)</td>"+
+                    "<td width='20%'>FIR Year</td>"+
+                "</tr>";
+        var len = data.length;
+         var row = table.insertRow(0);
+         for ( var i = 0; i < len; i++) {
+         var rowcolor=i%2 === 0 ?"darkrow":"lightrow";
+          var row = "<tr id="+i+" class='"+rowcolor +"'>"+
+                    "<td style='word-wrap:break-word'>"+ (i+1) +"</td>"+
+                    "<td style='word-wrap:break-word'>"+data[i].firNumDisplay +"</td>"+
+                    "<td style='word-wrap:break-word'>"+ data[i].firRegDate+"</td>"+
+                    "<td style='word-wrap:break-word'>"+ data[i].firYear+"</td>"+
+                "</tr>";
+               console.log(row)
+               mainrow += row
+        }
+         table.innerHTML=mainrow;
+    });
+
+    }
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

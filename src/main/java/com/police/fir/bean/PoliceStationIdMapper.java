@@ -7,6 +7,8 @@ import com.police.fir.repository.PoliceStationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -55,7 +57,10 @@ public class PoliceStationIdMapper {
             firDetail.setFirStatus(bean.getFirStatus());
             firDetail.setFirToDate(bean.getFirToDate());
             firDetail.setFirToDateStr(bean.getFirToDateStr());
-            firDetail.setFirYear(bean.getFirYear());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate date = LocalDate.parse(bean.getFirRegDate(), formatter);
+                System.out.println(date.getYear());
+                firDetail.setFirYear(Integer.parseInt(bean.getFirYear()) == 0 ?String.valueOf(date.getYear()) : bean.getFirYear());
             firDetail.setIsFirstSyncDone(bean.getIsFirstSyncDone());
             firDetail.setLangCd(bean.getLangCd());
             firDetail.setLinkedFirAction(bean.getLinkedFirAction());

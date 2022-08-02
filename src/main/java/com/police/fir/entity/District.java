@@ -14,6 +14,6 @@ import javax.persistence.Table;
 @Table(name = "District")
 public class District {
     @Id
-    private int DistrictId;
+    private Integer DistrictId;
     private String DistrictName;
 }
