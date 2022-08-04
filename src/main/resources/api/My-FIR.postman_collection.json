@@ -1,0 +1,122 @@
+{
+	"variables": [],
+	"info": {
+		"name": "My-FIR",
+		"_postman_id": "1a7622f7-0952-668f-b0ea-89be5479f56d",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost:9090/getpolicestationid/8162",
+			"request": {
+				"url": "localhost:9090/getpolicestationid/8162",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": "from district id fetch all policestation record and store response into tables police_station"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:9090/fir/8160/8160002/2017",
+			"request": {
+				"url": "localhost:9090/fir/8160/8160002/2017",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": "fetch fir_details from API and store into table\nfir/districtId/policestation_id/year"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:9090/fir?districtId=8162&policestationId=8162038&year=2022",
+			"request": {
+				"url": {
+					"raw": "localhost:9090/fir?districtId=8162&policestationId=8162038&year=2022",
+					"host": [
+						"localhost"
+					],
+					"port": "9090",
+					"path": [
+						"fir"
+					],
+					"query": [
+						{
+							"key": "districtId",
+							"value": "8162",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "policestationId",
+							"value": "8162038",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "year",
+							"value": "2022",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "this API used for UI. get generate dynamic rowfor FIR details. FIR details will fetch from fir database fir_details  "
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:9090/getpolicestationid?districtId=8162",
+			"request": {
+				"url": {
+					"raw": "http://localhost:9090/getpolicestationid?districtId=8162",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9090",
+					"path": [
+						"getpolicestationid"
+					],
+					"query": [
+						{
+							"key": "districtId",
+							"value": "8162",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "This API is used for UI. get autopopulate of policeStation select box"
+			},
+			"response": []
+		}
+	]
+}
