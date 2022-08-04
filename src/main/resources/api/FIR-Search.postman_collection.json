@@ -8,17 +8,6 @@
 	},
 	"item": [
 		{
-			"name": "search-FIR",
-			"request": {
-				"url": "",
-				"method": "GET",
-				"header": [],
-				"body": {},
-				"description": ""
-			},
-			"response": []
-		},
-		{
 			"name": "https://cctns.delhipolice.gov.in/citizen/getfirsearchpolicestations.htm",
 			"request": {
 				"url": "https://cctns.delhipolice.gov.in/citizen/getfirsearchpolicestations.htm",
@@ -35,6 +24,36 @@
 					"raw": "districtCd=8165"
 				},
 				"description": "fetch police_stationid on the basis of district id, district id will pass into body"
+			},
+			"response": []
+		},
+		{
+			"name": "https://cctns.delhipolice.gov.in/citizen/regfirsearchpage.htm",
+			"request": {
+				"url": "https://cctns.delhipolice.gov.in/citizen/regfirsearchpage.htm",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Connection",
+						"value": "keep-alive",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-GB,en-US;q=0.9,en;q=0.8",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "sdistrict=8160&spolicestation=81600018&firFromDateStr=01/01/2022&firToDateStr=31/12/2022&regFirNo=0&radioValue=None&searchName=&firYear=2022"
+				},
+				"description": "This API is used to get details from 3rd API and save data into database"
 			},
 			"response": []
 		}
