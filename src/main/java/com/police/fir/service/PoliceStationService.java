@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ public class PoliceStationService {
     @Autowired
     PoliceStationRepository policeStationRepository;
 
-    public PoliceStationResponseBean searchPoliceStationCodeConsumer(int districtId) throws IOException {
+    public PoliceStationResponseBean savePoliceStationCode(int districtId) throws IOException {
         System.out.println("from police station code");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

@@ -9,7 +9,7 @@ import java.util.Collection;
 
 
 @Component
-public interface PoliceStationRepository extends JpaRepository<PoliceStation, Long > {
+public interface PoliceStationRepository extends JpaRepository<PoliceStation, Integer > {
 
     @Query("SELECT p FROM PoliceStation p WHERE p.districtId = ?1")
     Collection<PoliceStation> findAllByDistrictId(int districtId);

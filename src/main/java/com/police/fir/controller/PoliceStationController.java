@@ -14,24 +14,24 @@ import java.util.List;
 @RestController
 public class PoliceStationController {
 
-    private final PoliceStationService districtService;
+    private final PoliceStationService poiliceStationService;
 
     @Autowired
-    public PoliceStationController(PoliceStationService districtService) {
-        this.districtService = districtService;
+    public PoliceStationController(PoliceStationService poiliceStationService) {
+        this.poiliceStationService = poiliceStationService;
     }
 
 
     @PostMapping("/getpolicestationid/{districtId}")
     public ResponseEntity<PoliceStationResponseBean> postPoliceStationId(@PathVariable("districtId") int districtId) throws IOException {
         System.out.println("hi");
-        return new ResponseEntity<>(districtService.searchPoliceStationCodeConsumer(districtId), HttpStatus.OK);
+        return new ResponseEntity<>(poiliceStationService.savePoliceStationCode(districtId), HttpStatus.OK);
     }
 
     @GetMapping("/getpolicestationid")
-    public List<PoliceStation> getPoliceStationId( @RequestParam(value = "districtId", required = true) int districtId) throws IOException {
+    public List<PoliceStation> getPoliceStationId(@RequestParam(value = "districtId", required = true) int districtId) throws IOException {
         System.out.println("hi");
-        return districtService.getPoliceStationCode(districtId);
+        return poiliceStationService.getPoliceStationCode(districtId);
     }
 
 }

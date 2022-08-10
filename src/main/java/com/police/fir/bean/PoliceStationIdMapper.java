@@ -24,7 +24,7 @@ public class PoliceStationIdMapper {
         for (List<String> station : rows) {
             PoliceStation policeStation = new PoliceStation();
             System.out.println(station);
-            policeStation.setPolicestationId(Long.parseLong(station.get(0)));
+            policeStation.setPolicestationId(Integer.parseInt(station.get(0)));
             policeStation.setDistrictId(districtId);
             policeStation.setPolicestationName(station.get(1).toString());
             policeStationRepository.save(policeStation);

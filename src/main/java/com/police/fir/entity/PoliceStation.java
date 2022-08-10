@@ -11,7 +11,7 @@ import javax.persistence.Id;
 @Entity
 public class PoliceStation {
     @Id
-    private Long policestationId;
+    private Integer policestationId;
     private String policestationName;
     private int districtId;
 }
