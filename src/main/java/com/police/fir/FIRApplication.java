@@ -1,12 +1,15 @@
 package com.police.fir;
 
-import com.police.fir.scheduler.APIScheduler;
+//import com.police.fir.utility.AppProperties;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -20,12 +23,15 @@ import javax.net.ssl.X509TrustManager;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @SpringBootApplication
 @EnableScheduling
 public class FIRApplication implements CommandLineRunner {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ConfigurationException {
 		ConfigurableApplicationContext context = SpringApplication.run(FIRApplication.class, args);
 		System.out.println("Hello world!");
 		}

@@ -6,17 +6,20 @@ import com.police.fir.repository.PoliceStationRepository;
 import com.police.fir.service.DistrictService;
 import com.police.fir.service.FIRSearchService;
 import com.police.fir.service.PoliceStationService;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
 public class APIScheduler {
@@ -33,20 +36,12 @@ public class APIScheduler {
     @Autowired
     PoliceStationRepository policeStationRepository;
 
-    @Value("${fir.year}")
-    int year;
 
-    @Value("${fir.dateFrom}")
-    String dateFrom;
-
-    @Value("${fir.dateTo}")
-    String dateTo;
-
-//    @Scheduled(cron = "1 * * * * *")
+    //    @Scheduled(cron = "1 * * * * *")
     public void fetchPoliceStationSchedulerJob() {
 //        System.out.println("=============policeStation==============="+year);
-        List<District> districtList =  districtService.getDistrict();
-        for(District district : districtList){
+        List<District> districtList = districtService.getDistrict();
+        for (District district : districtList) {
             try {
                 policeStationService.savePoliceStationCode(district.getDistrictId());
             } catch (IOException e) {
@@ -55,82 +50,133 @@ public class APIScheduler {
         }
     }
 
-//    @Scheduled(cron = "1 * * * * *")
-    public void fetchFirDetailsJob() {
-        System.out.println("===============Fir Details============="+year);
-       int year = 2000;
-       while(year <= LocalDate.now().getYear()) {
-           List<District> districtList = districtService.getDistrict();
-           districtList.forEach(district -> {
-               int districtId = district.getDistrictId();
-               Collection<PoliceStation> policeStationCollection = policeStationRepository.findAllByDistrictId(districtId);
-               policeStationCollection.forEach(policeStation -> {
-                   int policeStationId = policeStation.getPolicestationId();
-                   try {
-                       firSearchService.searchAPIConsume(districtId, policeStationId, year);
-                   } catch (Exception e) {
-                       try {
-                           Thread.sleep(1000*10);
-                       } catch (InterruptedException ex) {
-                           throw new RuntimeException(ex);
-                       }
-                   }
+    @Scheduled(cron = "* 23 16 * * *") // run on 01:57 AM everyday
+    public void fetchFirDetailsJob() throws IOException, ConfigurationException {
+        LocalDate date = LocalDate.now().minus(1, ChronoUnit.DAYS);
+        int yearTo = date.getYear();
+        PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
+        int yearFrom = Integer.parseInt(config.getProperty("fir.year").toString());
+        System.out.println(yearFrom);
+        List<District> districtList = districtService.getDistrict();
+        CopyOnWriteArrayList<District> districtArrayList = new CopyOnWriteArrayList(districtList);
+        while (yearTo >= yearFrom) {
+            for (District district : districtArrayList) {
+                try {
+                    int districtId = district.getDistrictId();
+                    policeStationService.savePoliceStationCode(districtId);
+                    Collection<PoliceStation> policeStationCollection = policeStationRepository.findAllByDistrictId(districtId);
+                    System.out.println(policeStationCollection);
+                    CopyOnWriteArrayList<PoliceStation> policeStationList = new CopyOnWriteArrayList(policeStationCollection);
+                    for (PoliceStation policeStation : policeStationList) {
+                        int policeStationId = policeStation.getPolicestationId();
+                        try {
+                            firSearchService.searchAPIConsume(districtId, policeStationId, yearTo);
+                        } catch (Exception e) {
+                            e.printStackTrace();
 
-               });
-           });
-       }
+                            try {
+                                System.out.println("================API is down==waiting for 10 min================");
+                                policeStationList.add(policeStation);
+                                Thread.sleep(60000 * 10);
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    try {
+                        System.out.println("================API is down==waiting for 1 min================");
+                        districtArrayList.add(district);
+                        Thread.sleep(60000 * 10);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+            yearTo--;
+            System.out.println("year to == "+yearTo);
+        }
     }
 
-    @Scheduled(cron = "1 *  * * *")
-    public void fetchFirDetailsJobOnDaily() {
+    @Scheduled(cron = "* 35 09 * * *") // run on 11:54 AM everyday
+    public void fetchFirDetailsJobOnDaily() throws ConfigurationException, IOException {
         boolean flag = true;
-        while(flag) {
-            System.out.println("===============Fir Details i am inside=============" + dateFrom);
+        PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
+        LocalDate dateTo = LocalDate.now().minus(1, ChronoUnit.DAYS);
+        System.out.println(dateTo);
+        String dateFromDaily = (String) config.getProperty("fir.dateFromDaily");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate dateFrom = LocalDate.parse(dateFromDaily, formatter);
+        String sDateFrom = dateFrom.format(formatter);
+        String sDateTo = dateTo.format(formatter);
+        System.out.println("===" + dateFrom);
+        System.out.println("dateTo= " + dateTo);
+
+        while (flag && (dateFrom.getDayOfMonth() != dateTo.getDayOfMonth())) {
             List<District> districtList = districtService.getDistrict();
-            LocalDate dateTo = LocalDate.now();
-            LocalDate dateFrom = LocalDate.now().minus(1, ChronoUnit.MONTHS);
-            System.out.println("====================" + dateFrom);
-            districtList.forEach(district -> {
+            CopyOnWriteArrayList<District> districts = new CopyOnWriteArrayList<>(districtList);
+            for (District district : districts) {
+//                while (dateFrom.getDayOfMonth() != dateTo.getDayOfMonth()) {
                 int districtId = district.getDistrictId();
-                Collection<PoliceStation> policeStationCollection = policeStationRepository.findAllByDistrictId(districtId);
-                policeStationCollection.forEach(policeStation -> {
-                    int policeStationId = policeStation.getPolicestationId();
-                    try {
-                        DateTimeFormatter newPattern = DateTimeFormatter.ofPattern("dd/mm/yyyy");
-                        String sDateFrom = dateFrom.format(newPattern);
-                        String sDateTo = dateTo.format(newPattern);
-                        firSearchService.searchAPIConsumeDate(districtId, policeStationId, sDateFrom, sDateTo);
-                    } catch (Exception e) {
+                try {
+                    policeStationService.savePoliceStationCode(districtId);
+                    Collection<PoliceStation> policeStationCollection = policeStationRepository.findAllByDistrictId(districtId);
+                    CopyOnWriteArrayList<PoliceStation> policeStations = new CopyOnWriteArrayList<>(policeStationCollection);
+                    for (PoliceStation policeStation : policeStations) {
+                        int policeStationId = policeStation.getPolicestationId();
                         try {
-                            Thread.sleep(60000*10);
-                        } catch (InterruptedException ex) {
-                            throw new RuntimeException(ex);
+                            firSearchService.searchAPIConsumeDate(districtId, policeStationId, sDateFrom, sDateTo);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            config.setProperty("fir.dateFromDaily", dateFrom.format(formatter));
+                            config.save();
+                            try {
+                                System.out.println("================API is down==waiting for 10 min================");
+                                policeStations.add(policeStation);
+                                Thread.sleep(60000 * 10);
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
                         }
                     }
-                });
-            });
-            flag=false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    try {
+                        System.out.println("================API is down==waiting for 10 min================");
+                        districts.add(district);
+                        Thread.sleep(60000 * 10);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+            flag = false;
+            config.setProperty("fir.dateFromDaily", dateTo.format(formatter));
+            config.save();
         }
+
         System.out.println("==================================completed=============================");
     }
 
-//    @Scheduled(cron = "* * * 31 * *")
+    //        @Scheduled(cron = "1 * * * * *")
     public void fetchFirDetailsJobOnDateMonth() {
-        System.out.println("===============Fir Details============="+dateFrom);
-        List<District> districtList =  districtService.getDistrict();
-        LocalDate dateTo = LocalDate.now();
-        LocalDate dateFrom = LocalDate.now().minus(1, ChronoUnit.MONTHS);
-        System.out.println("===================="+dateFrom);
+        List<District> districtList = districtService.getDistrict();
+        LocalDateTime dateTo = LocalDateTime.now();
+        LocalDateTime dateFrom = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+        System.out.println("====================" + dateFrom);
         districtList.forEach(district -> {
             int districtId = district.getDistrictId();
             Collection<PoliceStation> policeStationCollection = policeStationRepository.findAllByDistrictId(districtId);
             policeStationCollection.forEach(policeStation -> {
                 int policeStationId = policeStation.getPolicestationId();
                 try {
-                    DateTimeFormatter newPattern = DateTimeFormatter.ofPattern("dd/mm/yyyy");
+                    DateTimeFormatter newPattern = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                     String sDateFrom = dateFrom.format(newPattern);
                     String sDateTo = dateTo.format(newPattern);
-                    firSearchService.getFir(districtId, policeStationId, sDateFrom, sDateTo);
+                    firSearchService.getFir(districtId, policeStationId, sDateFrom, sDateTo, "");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

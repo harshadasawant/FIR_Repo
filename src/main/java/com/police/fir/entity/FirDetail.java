@@ -7,13 +7,15 @@ import org.springframework.stereotype.Component;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
 @Component
 @Entity
 public class FirDetail {
-    @Id
+
     private String firNumDisplay;
     private int districtId;
     private String actId;
@@ -30,7 +32,8 @@ public class FirDetail {
     private String firDate;
     private String firFromDate;
     private String firFromDateStr;
-    private String firRegDate;
+    private LocalDate firRegDate;
+    @Id
     private String firRegNum;
     private String firStatus;
     private String firToDate;
@@ -54,7 +57,7 @@ public class FirDetail {
     private String queryDynamicPart;
     private String queryKey;
     private String recordCreatedBy;
-    private String recordCreatedOn;
+    private LocalDate recordCreatedOn;
     private String recordStatus;
     private String recordSyncFrom;
     private String recordSyncOn;

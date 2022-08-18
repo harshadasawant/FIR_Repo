@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -31,11 +32,13 @@ public class PoliceStationIdMapper {
         }
     }
 
-    public void beanToFIrDetailsDBMapper(FIRSearchBean firSeachBean) {
+    public String beanToFIrDetailsDBMapper(FIRSearchBean firSeachBean) {
+        String regNo =null;
         CitizenFirSearchBean citizenFirSearchBean = firSeachBean.getCitizenFirSearchBean();
         System.out.println(citizenFirSearchBean);
         List<CitizenFirSearchBean> citizenFirSearchBeans = firSeachBean.getList();
-        System.out.println(citizenFirSearchBeans);
+        System.out.println("----"+citizenFirSearchBeans.size());
+
         for (CitizenFirSearchBean bean : citizenFirSearchBeans) {
             FirDetail firDetail = new FirDetail();
             firDetail.setDistrictId(citizenFirSearchBean.getDistrictId());
@@ -52,12 +55,19 @@ public class PoliceStationIdMapper {
             firDetail.setFirFromDate(bean.getFirFromDate());
             firDetail.setFirFromDateStr(bean.getFirFromDateStr());
             firDetail.setFirNumDisplay(bean.getFirNumDisplay());
-            firDetail.setRegFirNo(bean.getRegFirNo());
-            firDetail.setFirRegDate(bean.getFirRegDate());
+            firDetail.setFirRegNum(bean.getFirRegNum());
+            regNo = bean.getFirRegNum();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            if(bean.getFirRegDate() != null){
+                LocalDate firdate = LocalDate.parse(bean.getFirRegDate() , formatter);
+                firDetail.setFirRegDate(firdate);
+            } else {
+                firDetail.setFirRegDate(null);
+            }
             firDetail.setFirStatus(bean.getFirStatus());
             firDetail.setFirToDate(bean.getFirToDate());
             firDetail.setFirToDateStr(bean.getFirToDateStr());
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 LocalDate date = LocalDate.parse(bean.getFirRegDate(), formatter);
                 System.out.println(date.getYear());
                 firDetail.setFirYear(Integer.parseInt(bean.getFirYear()) == 0 ?String.valueOf(date.getYear()) : bean.getFirYear());
@@ -79,7 +89,16 @@ public class PoliceStationIdMapper {
             firDetail.setPsRecordSyncOn(bean.getPsRecordSyncOn());
             firDetail.setQueryKey(bean.getQueryKey());
             firDetail.setRecordCreatedBy(bean.getRecordCreatedBy());
-            firDetail.setRecordCreatedOn(bean.getRecordCreatedOn());
+            String createdDate = bean.getRecordCreatedOn().split(" ")[0];
+
+            System.out.println("============create==="+createdDate);
+            DateTimeFormatter createdFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            if(bean.getRecordCreatedOn() != null){
+            LocalDate recordCreatedOn = LocalDate.parse(createdDate, createdFormatter);
+            firDetail.setRecordCreatedOn(recordCreatedOn); }
+            else {
+                firDetail.setRecordCreatedOn(null);
+            }
             firDetail.setRecordStatus(bean.getRecordStatus());
             firDetail.setRecordSyncFrom(bean.getRecordSyncFrom());
             firDetail.setRecordSyncOn(bean.getRecordSyncOn());
@@ -90,6 +109,7 @@ public class PoliceStationIdMapper {
             firDetail.setRecordUpdatedFrom(bean.getRecordUpdatedFrom());
             firDetail.setRecordUpdatedOn(bean.getRecordUpdatedOn());
             firDetail.setRecordUpdatedby(bean.getRecordUpdatedby());
+            System.out.println("===="+bean.getRegFirNo());
             firDetail.setRegFirNo(bean.getRegFirNo());
             firDetail.setReturnClassType(bean.getReturnClassType());
             firDetail.setSearchCrit(bean.isSearchCrit());
@@ -102,7 +122,11 @@ public class PoliceStationIdMapper {
             firDetail.setUserDistrictCd(bean.getUserDistrictCd());
             firDetail.setUserPsCd(bean.getUserPsCd());
             firDetail.setUserStateCd(bean.getUserStateCd());
+            System.out.println("==========");
             firDetailRepository.save(firDetail);
+            System.out.println("=========1=");
         }
+        return regNo;
+
     }
 }

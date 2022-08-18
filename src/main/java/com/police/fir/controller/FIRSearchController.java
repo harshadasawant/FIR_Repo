@@ -29,20 +29,38 @@ public class FIRSearchController {
        return new ResponseEntity<>(firSearchService.searchAPIConsume(districtId,policeStationId, year), HttpStatus.OK);
     }
 
+    @PostMapping("/fir/{districtId}/{policeStationId}")
+    public ResponseEntity<FIRSearchBean> postFIRWithDate(@PathVariable("districtId") int districtId,
+                                                         @PathVariable("policeStationId") int policeStationId,
+                                                         @RequestParam(value="dateFrom") String dateFrom,
+                                                         @RequestParam(value="dateTo") String dateTo) throws Exception {
+        System.out.println("hi");
+        return new ResponseEntity<>(firSearchService.searchAPIConsumeDate(districtId,policeStationId, dateFrom, dateTo), HttpStatus.OK);
+    }
+
     @GetMapping("/fir")
     public List<FirDetail> getFIR(@RequestParam(value = "districtId", required = true) int districtId,
                                   @RequestParam(value = "policestationId", required = true) int policestationId,
-                                  @RequestParam(value = "year", required = true) int year
+                                  @RequestParam(value = "year", required = true) String year
                                  ) throws IOException {
         return firSearchService.getFir(districtId,policestationId, year);
     }
+
     @GetMapping("/firdate")
-    public List<FirDetail> getFIRDate(@RequestParam(value = "districtId", required = true) int districtId,
+    public List<FirDetail> getFIR(@RequestParam(value = "districtId", required = true) int districtId,
                                   @RequestParam(value = "policestationId", required = true) int policestationId,
-                                  @RequestParam(value = "datefrom", required = true) String dateFrom,
-                                  @RequestParam(value = "dateto", required = true) String dateTo
+                                  @RequestParam(value = "datefrom", required = true) String datefrom,
+                                  @RequestParam(value = "dateto", required = true) String dateto,
+                                  @RequestParam(value = "year", defaultValue = "", required = false) String year
     ) throws IOException {
-        return firSearchService.getFir(districtId,policestationId, dateFrom, dateTo);
+        System.out.println("===========year====="+year);
+        return firSearchService.getFir(districtId,policestationId,datefrom, dateto, year);
     }
+    @GetMapping("/download")
+    public String getFIRDate(@RequestParam(value = "regfirno", required = true) String regfirno ) throws Exception {
+        System.out.println("inside========");
+        return firSearchService.downloadPDF(regfirno);
+    }
+
 
 }
