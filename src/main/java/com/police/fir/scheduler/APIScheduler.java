@@ -36,6 +36,8 @@ public class APIScheduler {
     @Autowired
     PoliceStationRepository policeStationRepository;
 
+    DateTimeFormatter printFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss");
+
 
     //    @Scheduled(cron = "1 * * * * *")
     public void fetchPoliceStationSchedulerJob() {
@@ -50,7 +52,7 @@ public class APIScheduler {
         }
     }
 
-    @Scheduled(cron = "* 23 16 * * *") // run on 01:57 AM everyday
+    @Scheduled(cron = "* 06 16 * * *") // run on 01:57 AM everyday
     public void fetchFirDetailsJob() throws IOException, ConfigurationException {
         LocalDate date = LocalDate.now().minus(1, ChronoUnit.DAYS);
         int yearTo = date.getYear();
@@ -73,9 +75,8 @@ public class APIScheduler {
                             firSearchService.searchAPIConsume(districtId, policeStationId, yearTo);
                         } catch (Exception e) {
                             e.printStackTrace();
-
                             try {
-                                System.out.println("================API is down==waiting for 10 min================");
+                                System.out.println("================API is down==waiting for 10 min================"+LocalDateTime.now().format(printFormatter));
                                 policeStationList.add(policeStation);
                                 Thread.sleep(60000 * 10);
                             } catch (InterruptedException ex) {
@@ -87,7 +88,7 @@ public class APIScheduler {
                 } catch (Exception e) {
                     e.printStackTrace();
                     try {
-                        System.out.println("================API is down==waiting for 1 min================");
+                        System.out.println("================API is down==waiting for 1 min================"+LocalDateTime.now().format(printFormatter));
                         districtArrayList.add(district);
                         Thread.sleep(60000 * 10);
                     } catch (InterruptedException ex) {
@@ -134,7 +135,7 @@ public class APIScheduler {
                             config.setProperty("fir.dateFromDaily", dateFrom.format(formatter));
                             config.save();
                             try {
-                                System.out.println("================API is down==waiting for 10 min================");
+                                System.out.println("================API is down==waiting for 10 min================"+LocalDateTime.now().format(printFormatter));
                                 policeStations.add(policeStation);
                                 Thread.sleep(60000 * 10);
                             } catch (InterruptedException ex) {
@@ -145,7 +146,7 @@ public class APIScheduler {
                 } catch (Exception e) {
                     e.printStackTrace();
                     try {
-                        System.out.println("================API is down==waiting for 10 min================");
+                        System.out.println("================API is down==waiting for 10 min================"+LocalDateTime.now().format(printFormatter));
                         districts.add(district);
                         Thread.sleep(60000 * 10);
                     } catch (InterruptedException ex) {
@@ -158,7 +159,7 @@ public class APIScheduler {
             config.save();
         }
 
-        System.out.println("==================================completed=============================");
+        System.out.println("==================================completed============================="+LocalDateTime.now().format(printFormatter));
     }
 
     //        @Scheduled(cron = "1 * * * * *")
@@ -182,7 +183,7 @@ public class APIScheduler {
                 }
             });
         });
-        System.out.println("==================================completed=============================");
+        System.out.println("==================================completed============================="+LocalDateTime.now().format(printFormatter));
     }
 
 }

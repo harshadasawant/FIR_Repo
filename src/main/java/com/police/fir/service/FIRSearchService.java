@@ -36,7 +36,10 @@ public class FIRSearchService {
         FIRSearchBean firSearchBean = restTemplate.postForObject("https://cctns.delhipolice.gov.in/citizen/regfirsearchpage.htm", request, FIRSearchBean.class);
         System.out.println("");
 //        FIRSearchBean firSearchBean = objectMapper.readValue(new File("data/data.json"), FIRSearchBean.class);
-        policeStationIdMapper.beanToFIrDetailsDBMapper(firSearchBean);
+        String regNo =  policeStationIdMapper.beanToFIrDetailsDBMapper(firSearchBean);
+        if(regNo != null) {
+            downloadPDF(regNo);
+        }
         return firSearchBean;
     }
     public FIRSearchBean searchAPIConsumeDate(int districtId, int policestationId, String dateFrom, String dateTo) throws Exception {
@@ -72,7 +75,7 @@ public class FIRSearchService {
         String url ="https://cctns.delhipolice.gov.in/citizen/gefirprint.htm?firRegNo="+regNo+"&stov=46XU-O3NJ-QB17-1MHM-TCDQ-391O-571E-FYEH";
         System.out.println(url);
         File file = restTemplate.execute(url, HttpMethod.GET, null, clientHttpResponse -> {
-            File ret = new File("C:\\Software\\Harshada\\"+regNo+".pdf");
+            File ret = new File("C:\\Software\\Harshada\\FIR_Report\\"+regNo+".pdf");
             StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(ret));
             return ret;
         });
