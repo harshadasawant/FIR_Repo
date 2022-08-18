@@ -23,14 +23,6 @@ public class FIRSearchService {
     private RestTemplate restTemplate;
     @Autowired
     private PoliceStationIdMapper policeStationIdMapper;
-
-    @Autowired
-    private DocumentRepository documentRepository;
-
-    @Autowired
-    private Document1 document;
-
-
     @Autowired
     private FirDetailRepository firDetailRepository;
     public FIRSearchBean searchAPIConsume(int districtId, int policestationId, int year) throws Exception {
