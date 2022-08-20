@@ -4,6 +4,8 @@ import com.police.fir.entity.FirDetail;
 import com.police.fir.entity.PoliceStation;
 import com.police.fir.repository.FirDetailRepository;
 import com.police.fir.repository.PoliceStationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,8 +22,15 @@ public class PoliceStationIdMapper {
     @Autowired
     FirDetailRepository firDetailRepository;
 
+    Logger logger = LoggerFactory.getLogger(PoliceStationIdMapper.class);
+
     public void beanToDBMapper(PoliceStationResponseBean policeStationResponseBean, int districtId) {
         List<List<String>> rows = policeStationResponseBean.getRows();
+        if(rows != null) {
+           logger.info(" district Id : "+districtId+ " size of police station : " +rows.size());
+        } else{
+            logger.info(" No data found for district Id : "+districtId);
+        }
         for (List<String> station : rows) {
             PoliceStation policeStation = new PoliceStation();
             System.out.println(station);

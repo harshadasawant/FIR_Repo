@@ -110,18 +110,19 @@ public class APIScheduler {
         boolean flag = true;
         PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
         LocalDate dateTo = LocalDate.now().minus(1, ChronoUnit.DAYS);
+        logger.info(" Previous date  : "+dateTo);
         System.out.println(dateTo);
         String dateFromDaily = (String) config.getProperty("fir.dateFromDaily");
+        logger.info("Config Property Date :"+ dateFromDaily);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate dateFrom = LocalDate.parse(dateFromDaily, formatter);
         String sDateFrom = dateFrom.format(formatter);
         String sDateTo = dateTo.format(formatter);
-        System.out.println("===" + dateFrom);
-        System.out.println("dateTo= " + dateTo);
 
         while (flag && (dateFrom.getDayOfMonth() != dateTo.getDayOfMonth())) {
             List<District> districtList = districtService.getDistrict();
+            logger.info("District List Size : "+districtList.size());
             CopyOnWriteArrayList<District> districts = new CopyOnWriteArrayList<>(districtList);
             for (District district : districts) {
 //                while (dateFrom.getDayOfMonth() != dateTo.getDayOfMonth()) {
