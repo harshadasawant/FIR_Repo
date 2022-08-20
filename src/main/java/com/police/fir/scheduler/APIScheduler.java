@@ -56,7 +56,7 @@ public class APIScheduler {
         }
     }
 
-    @Scheduled(cron = "* 06 16 * * *") // run on 01:57 AM everyday
+//    @Scheduled(cron = "* 06 16 * * *") // run on 01:57 AM everyday
     public void fetchFirDetailsJob() throws IOException, ConfigurationException {
         LocalDate date = LocalDate.now().minus(1, ChronoUnit.DAYS);
         int yearTo = date.getYear();
@@ -105,7 +105,7 @@ public class APIScheduler {
         }
     }
 
-    @Scheduled(cron = "* 35 09 * * *") // run on 11:54 AM everyday
+    @Scheduled(cron = "* 28 20 * * *") // run on 11:54 AM everyday
     public void fetchFirDetailsJobOnDaily() throws ConfigurationException, IOException {
         boolean flag = true;
         PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
@@ -119,13 +119,12 @@ public class APIScheduler {
         LocalDate dateFrom = LocalDate.parse(dateFromDaily, formatter);
         String sDateFrom = dateFrom.format(formatter);
         String sDateTo = dateTo.format(formatter);
-
+        int districtCount = 0;
         while (flag && (dateFrom.getDayOfMonth() != dateTo.getDayOfMonth())) {
             List<District> districtList = districtService.getDistrict();
             logger.info("District List Size : "+districtList.size());
             CopyOnWriteArrayList<District> districts = new CopyOnWriteArrayList<>(districtList);
             for (District district : districts) {
-//                while (dateFrom.getDayOfMonth() != dateTo.getDayOfMonth()) {
                 int districtId = district.getDistrictId();
                 try {
                     policeStationService.savePoliceStationCode(districtId);
@@ -134,16 +133,17 @@ public class APIScheduler {
                     for (PoliceStation policeStation : policeStations) {
                         int policeStationId = policeStation.getPolicestationId();
                         try {
+                            logger.info(" districtId : "+districtId + " policeStationId : " + policeStationId+ " sDateFrom : " +  sDateFrom+ " sDateTo : " +  sDateTo);
                             firSearchService.searchAPIConsumeDate(districtId, policeStationId, sDateFrom, sDateTo);
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            config.setProperty("fir.dateFromDaily", dateFrom.format(formatter));
-                            config.save();
+                            logger.error(e.getMessage(), e);
+
                             try {
-                                System.out.println("================API is down==waiting for 10 min================"+LocalDateTime.now().format(printFormatter));
+                                logger.info("================API is down==waiting for 5 min================"+LocalDateTime.now().format(printFormatter));
                                 policeStations.add(policeStation);
-                                Thread.sleep(60000 * 10);
+                                Thread.sleep(60000 * 5);
                             } catch (InterruptedException ex) {
+                                logger.error(e.getMessage(), e);
                                 throw new RuntimeException(ex);
                             }
                         }
@@ -151,20 +151,23 @@ public class APIScheduler {
                 } catch (Exception e) {
                     e.printStackTrace();
                     try {
-                        System.out.println("================API is down==waiting for 10 min================"+LocalDateTime.now().format(printFormatter));
+                        logger.info("================API is down==waiting for 5 min================"+LocalDateTime.now().format(printFormatter));
                         districts.add(district);
-                        Thread.sleep(60000 * 10);
+                        Thread.sleep(60000 * 5);
                     } catch (InterruptedException ex) {
+                        logger.error(e.getMessage(), e);
                         throw new RuntimeException(ex);
                     }
                 }
+                logger.info("Completed District size : "+ ++districtCount);
             }
             flag = false;
+            logger.info(" Date Saved into Config file as : "+dateFrom.format(formatter));
             config.setProperty("fir.dateFromDaily", dateTo.format(formatter));
             config.save();
         }
 
-        System.out.println("==================================completed============================="+LocalDateTime.now().format(printFormatter));
+        logger.info("==================================completed============================="+LocalDateTime.now().format(printFormatter));
     }
 
     //        @Scheduled(cron = "1 * * * * *")

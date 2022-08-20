@@ -59,9 +59,16 @@ public class FIRSearchController {
         return firSearchService.getFir(districtId,policestationId,datefrom, dateto, year);
     }
     @GetMapping("/download")
-    public String getFIRDate(@RequestParam(value = "regfirno", required = true) String regfirno ) throws Exception {
-        System.out.println("inside========");
-        return firSearchService.downloadPDF(regfirno);
+    public String getFIRDate(@RequestParam(value = "regfirno", required = true) String regfirno ){
+        String path = null;
+        try {
+           path =  firSearchService.downloadPDF(regfirno);
+        }catch(Exception e){
+            log.error("error = ",e);
+            e.printStackTrace();
+        }
+
+        return path;
     }
 
 

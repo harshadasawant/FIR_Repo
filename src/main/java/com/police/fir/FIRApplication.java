@@ -25,9 +25,6 @@ import javax.net.ssl.X509TrustManager;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @SpringBootApplication
 @EnableScheduling
@@ -36,10 +33,7 @@ public class FIRApplication implements CommandLineRunner {
 
 	public static void main(String[] args) throws ConfigurationException {
 		ConfigurableApplicationContext context = SpringApplication.run(FIRApplication.class, args);
-		logger.info("this is a info message");
-		logger.warn("this is a warn message");
-		logger.error("this is a error message");
-		System.out.println("Hello world!");
+
 		}
 
 

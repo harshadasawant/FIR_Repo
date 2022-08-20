@@ -47,7 +47,7 @@ public class PoliceStationIdMapper {
         System.out.println(citizenFirSearchBean);
         List<CitizenFirSearchBean> citizenFirSearchBeans = firSeachBean.getList();
         if(citizenFirSearchBeans !=null) {
-            System.out.println("----" + citizenFirSearchBeans.size());
+            logger.info(" Number Of record Retreived  :"+ citizenFirSearchBeans.size());
         }
 
         for (CitizenFirSearchBean bean : citizenFirSearchBeans) {
@@ -68,7 +68,6 @@ public class PoliceStationIdMapper {
             firDetail.setFirNumDisplay(bean.getFirNumDisplay());
             firDetail.setFirRegNum(bean.getFirRegNum());
             regNo = bean.getFirRegNum();
-
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             if(bean.getFirRegDate() != null){
                 LocalDate firdate = LocalDate.parse(bean.getFirRegDate() , formatter);
@@ -101,8 +100,6 @@ public class PoliceStationIdMapper {
             firDetail.setQueryKey(bean.getQueryKey());
             firDetail.setRecordCreatedBy(bean.getRecordCreatedBy());
             String createdDate = bean.getRecordCreatedOn().split(" ")[0];
-
-            System.out.println("============create==="+createdDate);
             DateTimeFormatter createdFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             if(bean.getRecordCreatedOn() != null){
             LocalDate recordCreatedOn = LocalDate.parse(createdDate, createdFormatter);
@@ -133,9 +130,11 @@ public class PoliceStationIdMapper {
             firDetail.setUserDistrictCd(bean.getUserDistrictCd());
             firDetail.setUserPsCd(bean.getUserPsCd());
             firDetail.setUserStateCd(bean.getUserStateCd());
-            System.out.println("==========");
+            logger.info(" Retreived Data is :- DistrictId : "+bean.getDistrictId()+
+                    " PoliceStationId : "+bean.getPoliceStationId() +" Fir Reg Date : "+bean.getFirRegDate()+
+                    " Fir Reg No : "+bean.getFirRegNum()+" Record Created on : "+bean.getRecordCreatedOn());
             firDetailRepository.save(firDetail);
-            System.out.println("=========1=");
+
         }
         return regNo;
 
