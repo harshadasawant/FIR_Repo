@@ -3,6 +3,8 @@ package com.police.fir.controller;
 import com.police.fir.bean.FIRSearchBean;
 import com.police.fir.entity.FirDetail;
 import com.police.fir.service.FIRSearchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,7 @@ import java.util.List;
 public class FIRSearchController {
 
     private final FIRSearchService firSearchService;
-
+    Logger log = LoggerFactory.getLogger(FIRSearchController.class);
     @Autowired
     public FIRSearchController(FIRSearchService firSearchService) {
         this.firSearchService = firSearchService;
@@ -25,7 +27,7 @@ public class FIRSearchController {
 
     @PostMapping("/fir/{districtId}/{policeStationId}/{year}")
     public ResponseEntity<FIRSearchBean> postFIR(@PathVariable("districtId") int districtId,@PathVariable("policeStationId") int policeStationId, @PathVariable("year") int year) throws Exception {
-        System.out.println("hi");
+        log.trace("helooooooooooooooooo");
        return new ResponseEntity<>(firSearchService.searchAPIConsume(districtId,policeStationId, year), HttpStatus.OK);
     }
 

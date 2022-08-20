@@ -6,6 +6,8 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,9 +32,13 @@ import java.time.format.DateTimeFormatter;
 @SpringBootApplication
 @EnableScheduling
 public class FIRApplication implements CommandLineRunner {
+	private static final Logger logger = LoggerFactory.getLogger(FIRApplication.class);
 
 	public static void main(String[] args) throws ConfigurationException {
 		ConfigurableApplicationContext context = SpringApplication.run(FIRApplication.class, args);
+		logger.info("this is a info message");
+		logger.warn("this is a warn message");
+		logger.error("this is a error message");
 		System.out.println("Hello world!");
 		}
 

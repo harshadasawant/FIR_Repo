@@ -8,6 +8,8 @@ import com.police.fir.service.FIRSearchService;
 import com.police.fir.service.PoliceStationService;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -37,6 +39,8 @@ public class APIScheduler {
     PoliceStationRepository policeStationRepository;
 
     DateTimeFormatter printFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss");
+
+    Logger logger = LoggerFactory.getLogger(APIScheduler.class);
 
 
     //    @Scheduled(cron = "1 * * * * *")

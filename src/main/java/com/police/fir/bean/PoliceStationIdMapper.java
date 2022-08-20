@@ -37,7 +37,9 @@ public class PoliceStationIdMapper {
         CitizenFirSearchBean citizenFirSearchBean = firSeachBean.getCitizenFirSearchBean();
         System.out.println(citizenFirSearchBean);
         List<CitizenFirSearchBean> citizenFirSearchBeans = firSeachBean.getList();
-        System.out.println("----"+citizenFirSearchBeans.size());
+        if(citizenFirSearchBeans !=null) {
+            System.out.println("----" + citizenFirSearchBeans.size());
+        }
 
         for (CitizenFirSearchBean bean : citizenFirSearchBeans) {
             FirDetail firDetail = new FirDetail();
