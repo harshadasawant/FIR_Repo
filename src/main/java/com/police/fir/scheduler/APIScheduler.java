@@ -105,12 +105,12 @@ public class APIScheduler {
         }
     }
 
-    @Scheduled(cron = "* 28 20 * * *") // run on 11:54 AM everyday
+    @Scheduled(cron = "* 54 00 * * *") // run on 11:54 AM everyday
     public void fetchFirDetailsJobOnDaily() throws ConfigurationException, IOException {
         boolean flag = true;
         PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
-        LocalDate dateTo = LocalDate.now().minus(1, ChronoUnit.DAYS);
-        logger.info(" Previous date  : "+dateTo);
+        LocalDate dateTo = LocalDate.now();
+        logger.info(" Today's date  : "+dateTo);
         System.out.println(dateTo);
         String dateFromDaily = (String) config.getProperty("fir.dateFromDaily");
         logger.info("Config Property Date :"+ dateFromDaily);
@@ -124,35 +124,48 @@ public class APIScheduler {
             List<District> districtList = districtService.getDistrict();
             logger.info("District List Size : "+districtList.size());
             CopyOnWriteArrayList<District> districts = new CopyOnWriteArrayList<>(districtList);
-            for (District district : districts) {
+//            for (District district : districts) {
+                for(int i=0;i<districts.size();i++){
+                    District district = districts.get(i);
                 int districtId = district.getDistrictId();
                 try {
                     policeStationService.savePoliceStationCode(districtId);
                     Collection<PoliceStation> policeStationCollection = policeStationRepository.findAllByDistrictId(districtId);
                     CopyOnWriteArrayList<PoliceStation> policeStations = new CopyOnWriteArrayList<>(policeStationCollection);
-                    for (PoliceStation policeStation : policeStations) {
+//                    for (PoliceStation policeStation : policeStations) {
+                        for(int j=0;j<policeStations.size();j++){
+                            PoliceStation policeStation = policeStations.get(j);
                         int policeStationId = policeStation.getPolicestationId();
                         try {
                             logger.info(" districtId : "+districtId + " policeStationId : " + policeStationId+ " sDateFrom : " +  sDateFrom+ " sDateTo : " +  sDateTo);
                             firSearchService.searchAPIConsumeDate(districtId, policeStationId, sDateFrom, sDateTo);
+                            policeStations.forEach(policeStation1 -> {
+                                logger.info("policestation = "+policeStation1.getPolicestationId()+" District Id = "+policeStation1.getDistrictId());
+                            });
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
 
                             try {
-                                logger.info("================API is down==waiting for 5 min================"+LocalDateTime.now().format(printFormatter));
+                                logger.info("================API is down==waiting for 5 min================"+LocalDateTime.now().format(printFormatter)+" ===  "+policeStations.size());
                                 policeStations.add(policeStation);
+                                policeStations.forEach(policeStation1 -> {
+                                    logger.info("policestation in catch = "+policeStation1.getPolicestationId()+" District Id = "+policeStation1.getDistrictId());
+                                });
                                 Thread.sleep(60000 * 5);
                             } catch (InterruptedException ex) {
                                 logger.error(e.getMessage(), e);
-                                throw new RuntimeException(ex);
+                                 throw new RuntimeException(ex);
                             }
                         }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                     try {
-                        logger.info("================API is down==waiting for 5 min================"+LocalDateTime.now().format(printFormatter));
+                        logger.info("================API is down==waiting for 5 min================"+LocalDateTime.now().format(printFormatter)+"district size ="+districts.size());
                         districts.add(district);
+                        districts.forEach(district1 -> {
+                            logger.info("district Id : "+district1.getDistrictId()+" "+district1.getDistrictName());
+                        });
                         Thread.sleep(60000 * 5);
                     } catch (InterruptedException ex) {
                         logger.error(e.getMessage(), e);
@@ -162,7 +175,7 @@ public class APIScheduler {
                 logger.info("Completed District size : "+ ++districtCount);
             }
             flag = false;
-            logger.info(" Date Saved into Config file as : "+dateFrom.format(formatter));
+            logger.info(" Date Saved into Config file as : "+dateTo.format(formatter));
             config.setProperty("fir.dateFromDaily", dateTo.format(formatter));
             config.save();
         }

@@ -68,8 +68,10 @@ public class FIRSearchService {
 //        String data = "sdistrict=8162&spolicestation=8162038&firFromDateStr=23/03/2022&firToDateStr=06/06/2022&regFirNo=0&radioValue=None&firYear=2022";
         String data = "sdistrict=" + districtId + "&spolicestation=" + policestationId + "&firFromDateStr="+dateFrom + "&firToDateStr=" + dateTo + "&regFirNo=0&radioValue=None&firYear=" + year;
         HttpEntity<String> request = new HttpEntity<>(data, headers);
+        logger.info("=============data============="+data+"   "+LocalDateTime.now());
         FIRSearchBean firSearchBean = restTemplate.postForObject("https://cctns.delhipolice.gov.in/citizen/regfirsearchpage.htm", request, FIRSearchBean.class);
-//        FIRSearchBean firSearchBean = objectMapper.readValue(new File("data/data.json"), FIRSearchBean.class);
+        logger.info("=============firSearchBean.getList()============="+firSearchBean.getList()+"   "+LocalDateTime.now());
+        //        FIRSearchBean firSearchBean = objectMapper.readValue(new File("data/data.json"), FIRSearchBean.class);
 //        System.out.println("===============posted==========="+firSearchBean.getList().size());
         String regNo =  policeStationIdMapper.beanToFIrDetailsDBMapper(firSearchBean);
         logger.info("Register No : "+regNo);

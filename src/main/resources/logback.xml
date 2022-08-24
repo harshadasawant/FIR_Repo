@@ -23,6 +23,8 @@
         <encoder>
             <pattern>%d %p %c{1.} [%t] %m%n</pattern>
         </encoder>
+<!--        <immediateFlush>true</immediateFlush>-->
+
     </appender>
 
 
