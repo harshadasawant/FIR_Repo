@@ -71,5 +71,10 @@ public class FIRSearchController {
         return path;
     }
 
+    @GetMapping("/fir/{firregno}")
+    public FirDetail getFIR(@PathVariable(value = "firregno", required = true) String firregno) throws IOException {
+        FirDetail firDetail = firSearchService.getFir(firregno);
+        return firDetail;
+    }
 
 }

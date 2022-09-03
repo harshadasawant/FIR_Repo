@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FIRSearchService {
@@ -47,14 +48,12 @@ public class FIRSearchService {
 //        String data = "sdistrict=8162&spolicestation=8162038&firFromDateStr=23/03/2022&firToDateStr=06/06/2022&regFirNo=0&radioValue=None&firYear=2022";
         String data = "sdistrict=" + districtId + "&spolicestation=" + policestationId + "&firFromDateStr=01/01/" + year + "&firToDateStr=31/12/" + year + "&regFirNo=0&radioValue=None&firYear=" + year;
         HttpEntity<String> request = new HttpEntity<>(data, headers);
-
+        logger.info("=============data============="+data+"   "+LocalDateTime.now());
         FIRSearchBean firSearchBean = restTemplate.postForObject("https://cctns.delhipolice.gov.in/citizen/regfirsearchpage.htm", request, FIRSearchBean.class);
-        System.out.println("");
+        logger.info("=============firSearchBean.getList()============="+firSearchBean.getList()+"   "+LocalDateTime.now());
 //        FIRSearchBean firSearchBean = objectMapper.readValue(new File("data/data.json"), FIRSearchBean.class);
-        String regNo =  policeStationIdMapper.beanToFIrDetailsDBMapper(firSearchBean);
-        if(regNo != null) {
-            downloadPDF(regNo);
-        }
+        policeStationIdMapper.beanToFIrDetailsDBMapper(firSearchBean);
+
         return firSearchBean;
     }
     public FIRSearchBean searchAPIConsumeDate(int districtId, int policestationId, String dateFrom, String dateTo) throws Exception {
@@ -73,11 +72,9 @@ public class FIRSearchService {
         logger.info("=============firSearchBean.getList()============="+firSearchBean.getList()+"   "+LocalDateTime.now());
         //        FIRSearchBean firSearchBean = objectMapper.readValue(new File("data/data.json"), FIRSearchBean.class);
 //        System.out.println("===============posted==========="+firSearchBean.getList().size());
-        String regNo =  policeStationIdMapper.beanToFIrDetailsDBMapper(firSearchBean);
-        logger.info("Register No : "+regNo);
-        if(regNo != null) {
-            downloadPDF(regNo);
-        }
+        policeStationIdMapper.beanToFIrDetailsDBMapper(firSearchBean);
+
+
         return firSearchBean;
     }
 
@@ -131,6 +128,15 @@ public class FIRSearchService {
         firDetailItr.forEach(firDetailList::add);
         System.out.println("==========="+firDetailList);
         return firDetailList;
+    }
+    public FirDetail getFir(String firRegNo) throws IOException {
+        Optional<FirDetail> firDetailOptional = firDetailRepository.findById(firRegNo);
+        FirDetail firDetail = null;
+        if(!firDetailOptional.isEmpty()){
+            firDetail = firDetailOptional.get();
+        }
+        System.out.println("==========="+firDetail);
+        return firDetail;
     }
     public List<FirDetail> getFir(int districtId, int policestationId, String dateFrom, String dateTo,String year) throws IOException {
         List<FirDetail> firDetailList = new ArrayList<FirDetail>();

@@ -1,14 +1,34 @@
 package com.police.fir.bean;
 
+import com.police.fir.entity.ExceptionDBConnect;
 import com.police.fir.entity.FirDetail;
 import com.police.fir.entity.PoliceStation;
+import com.police.fir.repository.ExceptionRepository;
 import com.police.fir.repository.FirDetailRepository;
 import com.police.fir.repository.PoliceStationRepository;
+import com.police.fir.service.FIRSearchService;
+import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.client.RestTemplate;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,6 +41,15 @@ public class PoliceStationIdMapper {
 
     @Autowired
     FirDetailRepository firDetailRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private ExceptionDBConnect exceptionDBConnect;
+
+    @Autowired
+    private ExceptionRepository exceptionRepository;
 
     Logger logger = LoggerFactory.getLogger(PoliceStationIdMapper.class);
 
@@ -41,7 +70,7 @@ public class PoliceStationIdMapper {
         }
     }
 
-    public String beanToFIrDetailsDBMapper(FIRSearchBean firSeachBean) {
+    public void beanToFIrDetailsDBMapper(FIRSearchBean firSeachBean) {
         String regNo =null;
         CitizenFirSearchBean citizenFirSearchBean = firSeachBean.getCitizenFirSearchBean();
         System.out.println(citizenFirSearchBean);
@@ -130,13 +159,138 @@ public class PoliceStationIdMapper {
             firDetail.setUserDistrictCd(bean.getUserDistrictCd());
             firDetail.setUserPsCd(bean.getUserPsCd());
             firDetail.setUserStateCd(bean.getUserStateCd());
-            logger.info(" Retreived Data is :- DistrictId : "+bean.getDistrictId()+
-                    " PoliceStationId : "+bean.getPoliceStationId() +" Fir Reg Date : "+bean.getFirRegDate()+
-                    " Fir Reg No : "+bean.getFirRegNum()+" Record Created on : "+bean.getRecordCreatedOn());
+            logger.info(" Retreived Data is :- DistrictId : "+firDetail.getDistrictId()+
+                    " PoliceStationId : "+firDetail.getPoliceStationId() +" Fir Reg Date : "+firDetail.getFirRegDate()+
+                    " Fir Reg No : "+firDetail.getFirRegNum()+" Record Created on : "+firDetail.getRecordCreatedOn());
+
+            if(regNo != null) {
+                try {
+                   String path =  downloadPDF(regNo);
+                    System.out.println("path = " + path);
+                   PDDocument document = PDDocument.load(new File(path));
+
+                    System.out.println("=============="+document.getNumberOfPages());
+                    extractTextFromScannedDocument(document,firDetail);
+                    System.out.println("=================address="+firDetail.getComplainantName());
+                    System.out.println("=================address="+firDetail.getAddress());
+                    System.out.println("=================address="+firDetail.getPassportNo());
+                    System.out.println("=================address="+firDetail.getYearOfBirth());
+
+                    document.close();
+                } catch (ConfigurationException | IOException | TesseractException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             firDetailRepository.save(firDetail);
 
         }
-        return regNo;
+    }
+
+    public String downloadPDF(String regNo) throws ConfigurationException {
+        System.out.println("=====inside id Mapper ============");
+        PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
+        String filePath = config.getProperty("fir.report.path").toString();
+        logger.info(" File Path for Report : "+filePath);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        String url ="https://cctns.delhipolice.gov.in/citizen/gefirprint.htm?firRegNo="+regNo+"&stov=46XU-O3NJ-QB17-1MHM-TCDQ-391O-571E-FYEH";
+        logger.info(" download pdf URL : "+url);
+        File file = null;
+        try {
+
+            file = restTemplate.execute(url, HttpMethod.GET, null, clientHttpResponse -> {
+                File ret = new File(filePath + regNo + ".pdf");
+                StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(ret));
+                return ret;
+            });
+        }catch (Exception e){
+            logger.error(e.getMessage(), e);
+            System.out.println("exceptionDBConnect = " + exceptionDBConnect);
+            System.out.println("exceptionRepository = " + exceptionRepository);
+            exceptionDBConnect.setExceptionCause(e.getCause() == null ? null : e.getCause().toString());
+            exceptionDBConnect.setExceptionTime(LocalDateTime.now());
+            exceptionDBConnect.setExceptionMessage(e.getMessage());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String exceptionAsString = sw.toString();
+            System.out.println(exceptionAsString);
+            exceptionDBConnect.setExceptionStatckTrace(exceptionAsString);
+            exceptionDBConnect.setFir_reg_num(regNo);
+            exceptionRepository.save(exceptionDBConnect);
+        }
+        if(file != null){
+            logger.info("File is get Saved into : "+file.getAbsolutePath());
+        }
+        else{
+            logger.info("File is not Created check Exception ");
+        }
+        return  file.getAbsolutePath();
+    }
+
+    private  void extractTextFromScannedDocument(PDDocument document, FirDetail firDetail) throws IOException, TesseractException {
+        // Extract images from file
+        PDFRenderer pdfRenderer = new PDFRenderer(document);
+//        StringBuilder out = new StringBuilder();
+
+        ITesseract _tesseract = new Tesseract();
+        System.out.println(_tesseract.toString());
+        _tesseract.setDatapath("C:\\firpdf\\tessdata");
+        _tesseract.setLanguage("eng+hin");
+
+        for (int page = 0; page < document.getNumberOfPages(); page++) {
+            BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
+
+            // Create a temp image file
+            File tempFile = File.createTempFile("tempfile_" + page, ".png");
+            //System.out.println(tempFile.getAbsolutePath());
+            ImageIO.write(bufferedImage, "png", tempFile);
+
+            String result = _tesseract.doOCR(tempFile);
+            if(page==0) {
+                System.out.println("Page==0");
+                String[] lines = result.split("\\n");
+//                myWriter.write("---------------------------------------------------");
+//                myWriter.write("File Name="+name+"\n");
+                int count=0;
+                for(String findname:lines) {
+
+                    if(findname.trim().startsWith("(a)Name"))
+                    {
+                        String cname[] = findname.split(" ");
+                        String s = "";
+                        for(int i=1;i< cname.length;i++){
+                            s += cname[i];
+                        }
+                        firDetail.setComplainantName(s);
+                    }
+                    if(findname.trim().startsWith("(b)Date/Year of Birth"))
+                    {
+                        String arg[] = findname.split(" ");
+                        if(!arg[6].equals("Nationality")){
+                            firDetail.setYearOfBirth(arg[6]);
+                        }
+                    }
+                    if(findname.trim().startsWith("(c)Passport"))
+                    {
+                        firDetail.setPassportNo(findname);
+                    }
+                    if(findname.trim().startsWith("(e)Address"))
+                    {
+                        String caddress[] = findname.split(" ");
+                        String s = "";
+                        for(int i=1;i< caddress.length;i++){
+                            s += caddress[i];
+                        }
+                       firDetail.setAddress(s);
+                    }
+                }
+                break;
+            }
+
+        }
 
     }
+
 }

@@ -80,4 +80,7 @@ public class FirDetail {
     private int userDistrictCd;
     private int userPsCd;
     private int userStateCd;
+    private String address;
+    private String yearOfBirth;
+    private String passportNo;
 }

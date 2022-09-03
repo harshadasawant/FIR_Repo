@@ -11,6 +11,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -38,9 +39,37 @@ public class APIScheduler {
     @Autowired
     PoliceStationRepository policeStationRepository;
 
+
     DateTimeFormatter printFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss");
 
+
     Logger logger = LoggerFactory.getLogger(APIScheduler.class);
+//    @Value("${cron.time}")
+//    final String time;
+//
+//    public APIScheduler(String time) {
+//        this.time = time;
+//    }
+
+//    public APIScheduler() {
+//        time = "* 16 20 * * * ";
+//    }
+
+
+//    PropertiesConfiguration config= new PropertiesConfiguration("config.properties");
+//    String time1 = config.getProperty("config.fir.time").toString();
+//
+//     final String  var1= config.getProperty("config.fir.time").toString();
+//
+//    public APIScheduler() throws ConfigurationException {
+//         config = new PropertiesConfiguration("config.properties");
+//        String time1 = config.getProperty("config.fir.time").toString();
+//
+//        String[] arr = time1.split(":");
+//        int hh = Integer.parseInt(arr[0]);
+//        int mm = Integer.parseInt(arr[1]);
+
+//    }
 
 
     //    @Scheduled(cron = "1 * * * * *")
@@ -56,33 +85,44 @@ public class APIScheduler {
         }
     }
 
-//    @Scheduled(cron = "* 06 16 * * *") // run on 01:57 AM everyday
+    @Scheduled(cron = "* 32 6 * * *") // run on 01:57 AM everyday
     public void fetchFirDetailsJob() throws IOException, ConfigurationException {
+//        System.out.println("time = " + time);
         LocalDate date = LocalDate.now().minus(1, ChronoUnit.DAYS);
         int yearTo = date.getYear();
-        PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
+        PropertiesConfiguration config= new PropertiesConfiguration("config.properties");
         int yearFrom = Integer.parseInt(config.getProperty("fir.year").toString());
         System.out.println(yearFrom);
         List<District> districtList = districtService.getDistrict();
         CopyOnWriteArrayList<District> districtArrayList = new CopyOnWriteArrayList(districtList);
         while (yearTo >= yearFrom) {
-            for (District district : districtArrayList) {
+            for(int i=0;i<districtArrayList.size();i++){
+                logger.info("i = " + i +"  "+districtArrayList.size());
+                District district = districtArrayList.get(i);
                 try {
                     int districtId = district.getDistrictId();
                     policeStationService.savePoliceStationCode(districtId);
                     Collection<PoliceStation> policeStationCollection = policeStationRepository.findAllByDistrictId(districtId);
                     System.out.println(policeStationCollection);
                     CopyOnWriteArrayList<PoliceStation> policeStationList = new CopyOnWriteArrayList(policeStationCollection);
-                    for (PoliceStation policeStation : policeStationList) {
+                    for(int j=0;j<policeStationList.size();j++){
+                        logger.info("j = " + j+" "+policeStationList.size());
+                        PoliceStation policeStation = policeStationList.get(j);
                         int policeStationId = policeStation.getPolicestationId();
                         try {
                             firSearchService.searchAPIConsume(districtId, policeStationId, yearTo);
+                            policeStationList.forEach(policeStation1 -> {
+                                logger.info("policestation = "+policeStation1.getPolicestationId()+" District Id = "+policeStation1.getDistrictId());
+                            });
                         } catch (Exception e) {
-                            e.printStackTrace();
+                           logger.error(e.getMessage(), e);
                             try {
-                                System.out.println("================API is down==waiting for 10 min================"+LocalDateTime.now().format(printFormatter));
+                                logger.info("================API is down==waiting for 10 min================"+LocalDateTime.now().format(printFormatter));
                                 policeStationList.add(policeStation);
-                                Thread.sleep(60000 * 10);
+                                policeStationList.forEach(policeStation1 -> {
+                                    logger.info("policestation = "+policeStation1.getPolicestationId()+" District Id = "+policeStation1.getDistrictId());
+                                });
+                                Thread.sleep(60000 * 5);
                             } catch (InterruptedException ex) {
                                 throw new RuntimeException(ex);
                             }
@@ -90,11 +130,14 @@ public class APIScheduler {
 
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage(), e);
                     try {
-                        System.out.println("================API is down==waiting for 1 min================"+LocalDateTime.now().format(printFormatter));
+                        logger.info("================API is down==waiting for 5 min================"+LocalDateTime.now().format(printFormatter));
                         districtArrayList.add(district);
-                        Thread.sleep(60000 * 10);
+                        districtArrayList.forEach(district1 -> {
+                            logger.info("DistrictId = "+district1.getDistrictId()+" policestation Id = "+district1.getDistrictName());
+                        });
+                        Thread.sleep(60000 * 5);
                     } catch (InterruptedException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -105,7 +148,7 @@ public class APIScheduler {
         }
     }
 
-    @Scheduled(cron = "* 54 00 * * *") // run on 11:54 AM everyday
+    //@Scheduled(cron = "* 31 18 * * *") // run on 11:54 AM everyday
     public void fetchFirDetailsJobOnDaily() throws ConfigurationException, IOException {
         boolean flag = true;
         PropertiesConfiguration config = new PropertiesConfiguration("config.properties");
@@ -126,6 +169,7 @@ public class APIScheduler {
             CopyOnWriteArrayList<District> districts = new CopyOnWriteArrayList<>(districtList);
 //            for (District district : districts) {
                 for(int i=0;i<districts.size();i++){
+                    logger.info("i = " + i +"  "+districts.size());
                     District district = districts.get(i);
                 int districtId = district.getDistrictId();
                 try {
@@ -134,6 +178,7 @@ public class APIScheduler {
                     CopyOnWriteArrayList<PoliceStation> policeStations = new CopyOnWriteArrayList<>(policeStationCollection);
 //                    for (PoliceStation policeStation : policeStations) {
                         for(int j=0;j<policeStations.size();j++){
+                            logger.info("j = " + j+" "+policeStations.size());
                             PoliceStation policeStation = policeStations.get(j);
                         int policeStationId = policeStation.getPolicestationId();
                         try {
